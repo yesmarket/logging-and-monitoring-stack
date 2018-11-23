@@ -1,0 +1,32 @@
+version: '3.5'
+
+services:
+
+  logstash:
+    build:
+      context: logstash/
+    ports:
+      - 5000:5000
+      - 5043:5043
+      - 12201:12201/udp
+    environment:
+      LS_JAVA_OPTS: "-Xmx256m -Xms256m"
+    networks:
+      - logging
+
+  test:
+    build:
+      context: test/
+    ports:
+      - 5045:5045
+    logging:
+      driver: gelf
+      options:
+        gelf-address: "udp://localhost:12201"
+    networks:
+      - logging
+    depends_on:
+      - logstash
+
+networks:
+  logging:
