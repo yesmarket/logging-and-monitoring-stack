@@ -39,7 +39,7 @@ namespace LogstashTest.Controllers
         [Route("ls1")]
         public ActionResult LogstashDirect()
         {
-            Log(lc => lc.WriteTo.LogstashHttp("http://logstash:5043"), "Logging directly to Logstash");
+            Log(lc => lc.WriteTo.LogstashHttp("http://192.168.99.100:5043"), "Logging directly to Logstash");
             Counter.Labels(Host, "Logstash", true.ToString()).Inc();
             return Ok();
         }
@@ -61,8 +61,6 @@ namespace LogstashTest.Controllers
                 using (LogContext.PushProperty("conversationId", Guid.NewGuid()))
                 {
                     log.Information(message);
-                    log.Warning(message);
-                    log.Error(message);
                 }
             }
         }
