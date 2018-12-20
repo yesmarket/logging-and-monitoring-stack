@@ -1,0 +1,109 @@
+version: '3.5'
+
+networks:
+  logging:
+
+volumes:
+   prometheus_data: {}
+   grafana_data: {}
+   alertmanager_data: {}
+
+services:
+
+   logstash:
+      image: galaxy.logstash
+      restart: unless-stopped
+      environment:
+         LS_JAVA_OPTS: "-Xmx256m -Xms256m"
+         LOGANALYTICS_CLIENT_ID: $LOGANALYTICS_CLIENT_ID
+         LOGANALYTICS_CLIENT_SECRET: $LOGANALYTICS_CLIENT_SECRET
+         APPINSIGHTS_INSTRUMENTATION_KEY: $APPINSIGHTS_INSTRUMENTATION_KEY
+      ports:
+         - 5000:5000
+         - 5043:5043
+         - 12201:12201/udp # generic
+      networks:
+         - logging
+
+   nodeexporter:
+      image: prom/node-exporter
+      volumes:
+         - /proc:/host/proc:ro
+         - /sys:/host/sys:ro
+         - /:/rootfs:ro
+      command:
+         - '--path.procfs=/host/proc'
+         - '--path.sysfs=/host/sys'
+         - '--collector.filesystem.ignored-mount-points=^/(sys|proc|dev|host|etc)($$|/)'
+      restart: unless-stopped
+      expose:
+         - 9100
+      networks:
+         - logging
+
+   cadvisor:
+      image: google/cadvisor
+      volumes:
+         - /:/rootfs:ro
+         - /var/run:/var/run:rw
+         - /sys:/sys:ro
+         - /var/lib/docker/:/var/lib/docker:ro
+         - /cgroup:/cgroup:ro
+      restart: unless-stopped
+      expose:
+         - 8080
+      networks:
+         - logging
+
+   prometheus:
+      image: galaxy.prometheus
+      volumes:
+          - prometheus_data:/prometheus
+      command:
+         - '--config.file=/etc/prometheus/prometheus.yml'
+         - '--storage.tsdb.path=/prometheus'
+         - '--storage.tsdb.retention=1d'
+         - '--web.console.libraries=/etc/prometheus/console_libraries'
+         - '--web.console.templates=/etc/prometheus/consoles'
+         - '--web.enable-lifecycle'
+      restart: unless-stopped
+      ports:
+         - 9090:9090
+      networks:
+         - logging
+      links:
+         - test
+         - nodeexporter
+         - cadvisor
+
+   alertmanager:
+      image: galaxy.alertmanager
+      volumes:
+          - alertmanager_data:/alertmanager
+      command:
+         - '--config.file=/etc/alertmanager/config.yml'
+         - '--storage.path=/alertmanager'
+      restart: unless-stopped
+      expose:
+         - 9093
+      networks:
+         - logging
+      links:
+         - prometheus
+
+   grafana:
+      image: galaxy.grafana
+      volumes:
+         - grafana_data:/var/lib/grafana
+      entrypoint: /import.sh
+      environment:
+         - GF_SECURITY_ADMIN_USER=${ADMIN_USER:-admin}
+         - GF_SECURITY_ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin}
+         - GF_USERS_ALLOW_SIGN_UP=false
+      restart: unless-stopped
+      ports:
+         - 3000:3000
+      networks:
+         - logging
+      links:
+         - prometheus

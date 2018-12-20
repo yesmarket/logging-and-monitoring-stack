@@ -1,0 +1,20 @@
+version: '3.5'
+
+services:
+
+   nodeexporter:
+      deploy:
+         mode: global
+
+   cadvisor:
+      deploy:
+         mode: global
+
+   prometheus:
+      command:
+         - '--config.file=/etc/prometheus/prometheus-prod.yml'
+         - '--storage.tsdb.path=/prometheus'
+         - '--storage.tsdb.retention=1d'
+         - '--web.console.libraries=/etc/prometheus/console_libraries'
+         - '--web.console.templates=/etc/prometheus/consoles'
+         - '--web.enable-lifecycle'

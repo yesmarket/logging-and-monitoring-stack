@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.AspNetCore.Mvc;
 using Prometheus;
 using Serilog;
@@ -39,7 +39,7 @@ namespace LogstashTest.Controllers
         [Route("ls1")]
         public ActionResult LogstashDirect()
         {
-            Log(lc => lc.WriteTo.LogstashHttp("http://192.168.99.100:5043"), "Logging directly to Logstash");
+            Log(lc => lc.WriteTo.LogstashHttp("http://localhost:5043"), "Logging directly to Logstash");
             Counter.Labels(Host, "Logstash", true.ToString()).Inc();
             return Ok();
         }

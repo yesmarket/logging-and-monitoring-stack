@@ -1,4 +1,0 @@
-- pipeline.id: test-logs
-  path.config: "/usr/share/logstash/pipeline/logs.conf"
-- pipeline.id: test-metrics
-  path.config: "/usr/share/logstash/pipeline/metrics.conf"

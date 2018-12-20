@@ -1,0 +1,56 @@
+version: '3.5'
+
+services:
+
+   logstash:
+      build:
+         context: logstash/
+         args:
+            DEVOPS_BASEURL: $DEVOPS_BASEURL
+            DEVOPS_USERNAME: $DEVOPS_USERNAME
+            DEVOPS_PAT: $DEVOPS_PAT
+            _HTTP_PROXY: $HTTP_PROXY
+
+   nodeexporter:
+      ports:
+         - 9100:9100
+
+   cadvisor:
+      ports:
+         - 8080:8080
+
+   prometheus:
+      build:
+         context: prometheus/
+
+   alertmanager:
+      build:
+         context: alertmanager/
+      ports:
+         - 9093:9093
+
+   grafana:
+      build:
+         context: grafana/
+         args:
+            GF_INSTALL_PLUGINS: "camptocamp-prometheus-alertmanager-datasource"
+            DEVOPS_BASEURL: $DEVOPS_BASEURL
+            DEVOPS_USERNAME: $DEVOPS_USERNAME
+            DEVOPS_PAT: $DEVOPS_PAT
+            _HTTP_PROXY: $HTTP_PROXY
+
+   test:
+      build:
+         context: test/
+      restart: unless-stopped
+      ports:
+         - 5045:5045
+      logging:
+         driver: gelf
+         options:
+            gelf-address: "udp://localhost:12201"
+            gelf-compression-type: gzip
+      networks:
+         - logging
+      links:
+         - logstash
