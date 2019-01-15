@@ -13,12 +13,17 @@
 
 FROM docker.elastic.co/logstash/logstash-oss:6.3.2 AS runtime
 
+COPY ./logstash-codec-prometheus-0.5.0.gem /tmp
+COPY ./logstash-output-applicationinsights-0.1.0.gem /tmp
+
 RUN logstash-plugin install logstash-input-http_poller
-RUN logstash-plugin install --version '0.4.0' logstash-codec-prometheus
+#RUN logstash-plugin install --version '0.4.0' logstash-codec-prometheus
+RUN logstash-plugin install /tmp/logstash-codec-prometheus-0.5.0.gem
 RUN logstash-plugin install logstash-filter-drop
 RUN logstash-plugin install logstash-filter-dissect
 RUN logstash-plugin install logstash-filter-prune
 RUN logstash-plugin install --version '0.2.0' logstash-output-loganalytics
+RUN logstash-plugin install /tmp/logstash-output-applicationinsights-0.1.0.gem
 RUN logstash-plugin install logstash-codec-json
 
 COPY ./config/logstash.yml /usr/share/logstash/config

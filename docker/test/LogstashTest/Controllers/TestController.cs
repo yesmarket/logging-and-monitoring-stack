@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Prometheus;
@@ -32,16 +33,18 @@ namespace LogstashTest.Controllers
          return "working";
       }
 
-
       [HttpGet, MapToApiVersion("1.0")]
       [Consumes("application/json")]
       [Route("l")]
       [ApiExplorerSettings(GroupName = "Test")]
       public ActionResult LogstashViaDockerProvider()
       {
-         _logger.LogInformation("Logging to Logstash via docker provider");
-         Counter.Labels(Host, "Logstash", false.ToString()).Inc();
-         return Ok();
+         using (_logger.BeginScope(new Dictionary<string, object> { ["CorrelationId"] = Guid.NewGuid() }))
+         {
+            _logger.LogInformation("Logging to Logstash via docker provider");
+            Counter.Labels(Host, "Logstash", false.ToString()).Inc();
+            return Ok();
+         }
       }
 
       private static void Log(Func<LoggerConfiguration, LoggerConfiguration> func, string message)
