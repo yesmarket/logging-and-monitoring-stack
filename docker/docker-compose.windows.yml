@@ -6,6 +6,7 @@ networks:
 volumes:
    prometheus_data: {}
    grafana_data: {}
+   alertmanager_data: {}
 
 services:
 
@@ -94,7 +95,7 @@ services:
       image: galaxy.grafana
       volumes:
          - grafana_data:/var/lib/grafana
-      entrypoint: /import.sh
+      #entrypoint: /import.sh
       environment:
          - GF_SECURITY_ADMIN_USER=${ADMIN_USER:-admin}
          - GF_SECURITY_ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin}

@@ -5,11 +5,6 @@ services:
    logstash:
       build:
          context: logstash/
-         args:
-            DEVOPS_BASEURL: $DEVOPS_BASEURL
-            DEVOPS_USERNAME: $DEVOPS_USERNAME
-            DEVOPS_PAT: $DEVOPS_PAT
-            _HTTP_PROXY: $HTTP_PROXY
 
    nodeexporter:
       ports:
@@ -34,9 +29,6 @@ services:
          context: grafana/
          args:
             GF_INSTALL_PLUGINS: "camptocamp-prometheus-alertmanager-datasource"
-            DEVOPS_BASEURL: $DEVOPS_BASEURL
-            DEVOPS_USERNAME: $DEVOPS_USERNAME
-            DEVOPS_PAT: $DEVOPS_PAT
             _HTTP_PROXY: $HTTP_PROXY
 
    test:
